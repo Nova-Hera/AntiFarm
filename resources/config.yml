@@ -1,0 +1,139 @@
+# Every rule has:
+#   mode: BLOCK  -> farm output is 0 (action cancelled where possible)
+#         NERF   -> farm output multiplied by `factor` (e.g. 0.25 = "lobotomized" automation)
+#         OFF    -> rule disabled
+#   factor: 0.0 .. 1.0 (only used by NERF)
+# Change, then run /antifarm reload. No restart needed.
+
+# Print every trigger to the console. In-game: /antifarm debug
+log-triggers: false
+
+# Vanilla recipes removed from the server (re-adding one needs a restart).
+remove-recipes: [hopper_minecart, crafter]
+
+# Blocks treated as "farm blocks" (plain names or #vanilla_tags).
+farm-blocks:
+  - "#crops"          # wheat, carrots, potatoes, beetroots, stems, torchflower, pitcher crop
+  - "#logs"
+  - "#leaves"
+  - melon
+  - pumpkin
+  - sugar_cane
+  - cactus
+  - bamboo
+  - kelp
+  - kelp_plant
+  - cocoa
+  - sweet_berry_bush
+  - cave_vines
+  - cave_vines_plant
+  - nether_wart
+  - brown_mushroom
+  - red_mushroom
+  - twisting_vines
+  - twisting_vines_plant
+  - weeping_vines
+  - weeping_vines_plant
+  - vine
+  - pitcher_plant
+  - chorus_plant
+  - chorus_flower
+
+rules:
+  # Crops/plants broken by water, pistons, flying machines, explosions, or self-breaking (cactus/cane columns).
+  crops-non-player-break:
+    mode: BLOCK
+    factor: 0.0
+    # Items that appear without any player breaking a block nearby (cactus touching a block, cane/bamboo/kelp
+    # columns losing their base) are scaled too.
+    unattributed-drops: [cactus, sugar_cane, bamboo, kelp]
+
+  # Farmer villagers / foxes harvesting crops and villagers collecting crops.
+  villager-farming:
+    mode: BLOCK
+    factor: 0.0
+
+  # Dispensers using farming items.
+  dispensers:
+    mode: BLOCK
+    factor: 0.0
+    blocked-items: [bone_meal, shears, glass_bottle, egg, water_bucket, lava_bucket, powder_snow_bucket]
+
+  # Mob grinders, including ones where a player lands the final hit.
+  mob-farm:
+    mode: BLOCK
+    factor: 0.0
+    # Any of these damage causes taints the mob for life (drop towers, crammers, suffocation, magma, drowning...).
+    taint-causes: [FALL, CRAMMING, SUFFOCATION, DROWNING, LAVA, FIRE, HOT_FLOOR, CAMPFIRE, CONTACT, FREEZE, FALLING_BLOCK, FLY_INTO_WALL, DRYOUT]
+    # Spawn origins that are always farm mobs.
+    tagged-spawn-reasons: [SPAWNER, SPAWNER_EGG, DISPENSE_EGG, BUILD_IRONGOLEM, BUILD_SNOWMAN, BUILD_COPPERGOLEM, VILLAGE_DEFENSE, NETHER_PORTAL, PIGLIN_ZOMBIFIED, DROWNED]
+    # Hostile mob that died this far from its spawn point without ever targeting a player = transported (water streams).
+    displacement-blocks: 24
+    density:
+      window-seconds: 600
+      free-hostile-kills: 20   # per ~48x48 area per window; beyond this every kill is farmed
+      free-animal-kills: 16
+    stationary:
+      kills: 10                # last N kills by the same player...
+      radius: 2.0              # ...all from within this radius...
+      window-seconds: 300      # ...within this time = AFK / auto-clicker grinder
+
+  # Village-defense iron golems (golem farms). Natural chunk-generated golems are unaffected.
+  iron-golem-farm:
+    mode: BLOCK
+    factor: 0.0
+
+  # Piglin bartering with gold that was not thrown by a player (dispenser/gold-farm automation).
+  piglin-barter:
+    mode: BLOCK
+    factor: 0.0
+
+  # Breeding beyond this many animals in a chunk.
+  animal-breeding:
+    mode: BLOCK
+    factor: 0.0
+    max-animals-per-chunk: 24
+
+  # Dispensers shearing sheep / mooshrooms / snow golems / bogged.
+  shearing-automation:
+    mode: BLOCK
+    factor: 0.0
+
+  # Machines collecting ground items. NERF = each item is taxed once by `factor`.
+  item-collection:
+    mode: BLOCK
+    factor: 0.0
+    hoppers: true
+    hopper-minecarts: true
+    allays: true
+
+  # Crafter auto-crafting.
+  crafter:
+    mode: BLOCK
+    factor: 0.0
+
+  # Hoppers feeding composters / extracting bone meal.
+  composter-automation:
+    mode: BLOCK
+    factor: 0.0
+
+  # Blocks formed by generators (lava+water, snow golems). Mining them yields `factor`.
+  block-generators:
+    mode: BLOCK
+    factor: 0.0
+    materials: [cobblestone, stone, basalt, cobbled_deepslate, snow]
+
+  # Trading halls: villager breeding, packed villagers, cure-discount loops.
+  villager-trading-halls:
+    mode: BLOCK
+    factor: 0.0
+    max-villagers-per-chunk: 8
+    strip-cure-discount: true
+
+  # AFK/auto-clicker fishing.
+  afk-fishing:
+    mode: BLOCK
+    factor: 0.0
+    same-pose-catches: 3        # this many consecutive catches from the exact same spot+angle
+    max-catches-per-window: 40
+    window-seconds: 600

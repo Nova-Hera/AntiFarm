@@ -1,0 +1,13 @@
+name: AntiFarm
+version: 1.0.0
+main: br.dotwired.antifarm.AntiFarm
+api-version: '1.21'
+description: Blocks (or nerfs) automated, AFK and grinder farming. Drops only exist if a player produced them.
+author: dotwired
+commands:
+  antifarm:
+    description: AntiFarm admin (reload | debug | rules)
+    permission: antifarm.admin
+permissions:
+  antifarm.admin:
+    default: op
